@@ -35,7 +35,7 @@ class VideoBuilder:
             "drawtext="
             f"text='{safe_text}':"
             "fontcolor=white:"
-            "fontsize=48:"
+            "fontsize=28:"
             "box=1:"
             "boxcolor=black@0.45:"
             "boxborderw=10:"
@@ -49,7 +49,7 @@ class VideoBuilder:
             "-f",
             "lavfi",
             "-i",
-            "color=c=#4f46e5:s=1080x1920:r=30",
+            "color=c=#4f46e5:s=720x1280:r=24",
         ]
 
         if audio_path and Path(audio_path).exists():
