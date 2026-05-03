@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.content_generator import ContentGenerator
-from app.database import ReelHistory, get_db, save_history
+from app.database import ReelHistory, get_db, save_history, init_db
 from app.instagram_client import InstagramClient
 from app.scheduler import shutdown_scheduler
 from app.tts import TTSService
@@ -19,6 +19,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title=settings.app_name)
+
+init_db()
 
 content_generator = ContentGenerator()
 tts_service = TTSService()
