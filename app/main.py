@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -142,6 +143,8 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
             },
         )
 
+        filename = str(final_video).split("/")[-1]
+
         return {
             "status": "success",
             "id": history.id,
@@ -149,6 +152,7 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
             "caption": content.caption,
             "hashtags": content.hashtags,
             "video": str(final_video),
+            "download_url": f"/download/{filename}",
             "publish": publish_result,
         }
 
@@ -157,6 +161,20 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
     except Exception as e:
         logger.exception("Generate reel failed")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/download/{filename}")
+def download_file(filename: str):
+    file_path = settings.generated_dir / filename
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(
+        path=file_path,
+        media_type="video/mp4",
+        filename=filename,
+    )
 
 
 @app.on_event("shutdown")
