@@ -62,11 +62,15 @@ class VideoBuilder:
             "-f",
             "lavfi",
             "-i",
+            "color=c=#4f46e5:s=1080x1920:r=30",
             "testsrc2=size=1080x1920:rate=30",
             "-i",
             str(audio_path),
             "-filter_complex",
             (
+                "[0:v]drawbox=x=0:y=0:w=iw:h=ih:color=#0ea5e9@0.35:t=fill,"
+                "drawbox=x=0:y=ih*0.55:w=iw:h=ih*0.45:color=#9333ea@0.40:t=fill,"
+                "eq=saturation=1.2:contrast=1.1,"
                 "[0:v]boxblur=2:1,eq=saturation=1.3:contrast=1.1,"
                 f"drawtext=text='{safe_text}':fontcolor=white:fontsize=48:"
                 "box=1:boxcolor=black@0.45:boxborderw=10:x=(w-text_w)/2:y=h-(text_h*2)[v]"

@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException
+from pydantic import BaseModel, Field
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -31,6 +32,10 @@ instagram_client = InstagramClient()
 
 
 class ReelRequest(BaseModel):
+    niche: str = Field(default="motivasyon", examples=["motivasyon"])
+    voice_gender: str = Field(default="female", examples=["female", "male"])
+    media_filename: str | None = Field(default=None, examples=[None, "sample.mp4"])
+    publish: bool = Field(default=False, examples=[False])
     niche: str = "kişisel gelişim"
     voice_gender: str = "female"
     media_filename: str | None = None
@@ -98,12 +103,16 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)) -> dict:
             final_video = video_builder.build_reel(
                 media_path=media_path,
                 audio_path=audio_path,
+                subtitle_text=content.script,
                 subtitle_text=content.hook,
                 output_name=f"reel_{ts}.mp4",
             )
         else:
             final_video = video_builder.build_reel_with_generated_background(
                 audio_path=audio_path,
+                subtitle_text=content.script,
+                output_name=f"reel_{ts}.mp4",
+            )
                 subtitle_text=content.hook,
                 output_name=f"reel_{ts}.mp4",
             )
