@@ -86,9 +86,7 @@ def list_history(limit: int = 20, db: Session = Depends(get_db)) -> dict:
 
 @app.post("/reels/generate")
 def generate_reel(req: ReelRequest, db: Session = Depends(get_db)) -> dict:
-    media_path = settings.uploads_dir / req.media_filename
-    if not media_path.exists():
-        raise HTTPException(status_code=404, detail="Media file not found in uploads directory")
+    
 
     try:
         content = content_generator.generate_daily_reel(niche=req.niche)
