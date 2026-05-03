@@ -87,34 +87,30 @@ def list_history(limit: int = 20, db: Session = Depends(get_db)) -> dict:
 @app.post("/reels/generate")
 def generate_reel(req: ReelRequest, db: Session = Depends(get_db)) -> dict:
  try:
-
     content = content_generator.generate_daily(...)
-
     ts = datetime.utcnow().strftime(...)
-
     audio_path = settings.generated_dir / ...
-
     tts_service.synthesize(...)
 
-                    if req.media_filename:
-            media_path = settings.uploads_dir / req.media_filename
+    if req.media_filename:
+        media_path = settings.uploads_dir / req.media_filename
 
-            if not media_path.exists():
-                raise HTTPException(status_code=404, detail="Media not found")
+        if not media_path.exists():
+            raise HTTPException(status_code=404, detail="Media not found")
 
-            final_video = video_builder.build_reel(
-                media_path=media_path,
-                audio_path=audio_path,
-                subtitle_text=content.script,
-                output_name=f"reel_{ts}.mp4",
-            )
+        final_video = video_builder.build_reel(
+            media_path=media_path,
+            audio_path=audio_path,
+            subtitle_text=content.script,
+            output_name=f"reel_{ts}.mp4",
+        )
 
-        else:
-            final_video = video_builder.build_reel_with_generated_background(
-                audio_path=audio_path,
-                subtitle_text=content.script,
-                output_name=f"reel_{ts}.mp4",
-            )
+    else:
+        final_video = video_builder.build_reel_with_generated_background(
+            audio_path=audio_path,
+            subtitle_text=content.script,
+            output_name=f"reel_{ts}.mp4",
+        )
     
 
         publish_result = {"status": "prepared"}
