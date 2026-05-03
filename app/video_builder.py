@@ -29,7 +29,13 @@ class VideoBuilder:
         settings.generated_dir.mkdir(parents=True, exist_ok=True)
         output_path = settings.generated_dir / output_name
 
-        safe_text = subtitle_text.replace(":", "\\:").replace("'", "\\'").replace("\n", " ")
+        safe_text = (
+            subtitle_text
+            .replace("\\", "\\\\")
+            .replace(":", "\\:")
+            .replace("'", "\\'")
+            .replace("\n", " ")
+        )
 
         filter_complex = (
             "drawtext="
@@ -38,7 +44,7 @@ class VideoBuilder:
             "fontsize=28:"
             "box=1:"
             "boxcolor=black@0.45:"
-            "boxborderw=10:"
+            "boxborderw=8:"
             "x=(w-text_w)/2:"
             "y=(h-text_h)/2"
         )
@@ -53,22 +59,21 @@ class VideoBuilder:
         ]
 
         if audio_path and Path(audio_path).exists():
-            cmd += ["-i", str(audio_path)]
-            cmd += ["-shortest"]
+            cmd += ["-i", str(audio_path), "-shortest"]
 
         cmd += [
-    "-vf",
-    filter_complex,
-    "-preset",
-    "ultrafast",
-    "-t",
-    "6",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart",
-    str(output_path),
-]
+            "-vf",
+            filter_complex,
+            "-preset",
+            "ultrafast",
+            "-t",
+            "6",
+            "-pix_fmt",
+            "yuv420p",
+            "-movflags",
+            "+faststart",
+            str(output_path),
+        ]
 
         subprocess.run(cmd, check=True)
 
