@@ -87,4 +87,5 @@ class VideoBuilder:
             str(output_path),
         ]
         self._run(cmd)
+        subprocess.run(cmd, check=True)
         return output_path
