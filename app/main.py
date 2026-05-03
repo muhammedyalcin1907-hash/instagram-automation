@@ -5,6 +5,7 @@ from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -35,6 +36,11 @@ class ReelRequest(BaseModel):
     voice_gender: str = Field(default="female", examples=["female", "male"])
     media_filename: str | None = Field(default=None, examples=[None, "sample.mp4"])
     publish: bool = Field(default=False, examples=[False])
+    niche: str = "kişisel gelişim"
+    voice_gender: str = "female"
+    media_filename: str | None = None
+    media_filename: str
+    publish: bool = False
 
 
 @app.on_event("startup")
@@ -80,6 +86,10 @@ def list_history(limit: int = 20, db: Session = Depends(get_db)) -> dict:
 
 @app.post("/reels/generate")
 def generate_reel(req: ReelRequest, db: Session = Depends(get_db)) -> dict:
+    media_path = settings.uploads_dir / req.media_filename
+    if not media_path.exists():
+        raise HTTPException(status_code=404, detail="Media file not found in uploads directory")
+
     try:
         content = content_generator.generate_daily_reel(niche=req.niche)
         ts = datetime.utcnow().strftime("%Y%m%d%H%M%S")
@@ -94,6 +104,7 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)) -> dict:
                 media_path=media_path,
                 audio_path=audio_path,
                 subtitle_text=content.script,
+                subtitle_text=content.hook,
                 output_name=f"reel_{ts}.mp4",
             )
         else:
@@ -102,6 +113,15 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)) -> dict:
                 subtitle_text=content.script,
                 output_name=f"reel_{ts}.mp4",
             )
+                subtitle_text=content.hook,
+                output_name=f"reel_{ts}.mp4",
+            )
+        final_video = video_builder.build_reel(
+            media_path=media_path,
+            audio_path=audio_path,
+            subtitle_text=content.hook,
+            output_name=f"reel_{ts}.mp4",
+        )
 
         publish_result = {"status": "prepared"}
         if req.publish:
