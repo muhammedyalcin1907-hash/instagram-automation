@@ -100,3 +100,8 @@ curl http://localhost:8000/reels/history
 - Üretilen dosyalar: `generated/`
 - Veritabanı: `reels.db`
 - Log dosyası: `app.log`
+
+## Railway Deploy
+- `Procfile` eklendi ve Railway için web process tanımlandı:
+  `web: uvicorn app.main:app --host 0.0.0.0 --port ${PORT}`
+- Railway ortamında `PORT` değişkeni platform tarafından verilir.
