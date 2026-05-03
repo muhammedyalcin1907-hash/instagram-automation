@@ -57,16 +57,18 @@ class VideoBuilder:
             cmd += ["-shortest"]
 
         cmd += [
-            "-vf",
-            filter_complex,
-            "-t",
-            "8",
-            "-pix_fmt",
-            "yuv420p",
-            "-movflags",
-            "+faststart",
-            str(output_path),
-        ]
+    "-vf",
+    filter_complex,
+    "-preset",
+    "ultrafast",
+    "-t",
+    "6",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    str(output_path),
+]
 
         subprocess.run(cmd, check=True)
 
