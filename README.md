@@ -70,6 +70,7 @@ curl http://localhost:8000/health
 curl http://localhost:8000/dry-run/test
 ```
 
+### Reels üretimi (dosya ile)
 ### Reels üretimi
 Önce `uploads/` içine `sample.mp4` koyun.
 
@@ -80,6 +81,20 @@ curl -X POST http://localhost:8000/reels/generate \
     "niche": "kişisel gelişim",
     "voice_gender": "female",
     "media_filename": "sample.mp4",
+    "publish": false
+  }'
+```
+
+
+### Reels üretimi (dosyasız otomatik background)
+`media_filename` göndermezseniz sistem otomatik motion/renkli 9:16 arka plan üretir:
+
+```bash
+curl -X POST http://localhost:8000/reels/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "niche": "teknoloji",
+    "voice_gender": "male",
     "publish": false
   }'
 ```

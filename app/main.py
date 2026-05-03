@@ -33,6 +33,7 @@ instagram_client = InstagramClient()
 class ReelRequest(BaseModel):
     niche: str = "kişisel gelişim"
     voice_gender: str = "female"
+    media_filename: str | None = None
     media_filename: str
     publish: bool = False
 
@@ -90,6 +91,22 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)) -> dict:
         audio_path = settings.generated_dir / f"voice_{ts}.mp3"
         tts_service.synthesize(text=content.script, output_path=audio_path, gender=req.voice_gender)
 
+        if req.media_filename:
+            media_path = settings.uploads_dir / req.media_filename
+            if not media_path.exists():
+                raise HTTPException(status_code=404, detail="Media file not found in uploads directory")
+            final_video = video_builder.build_reel(
+                media_path=media_path,
+                audio_path=audio_path,
+                subtitle_text=content.hook,
+                output_name=f"reel_{ts}.mp4",
+            )
+        else:
+            final_video = video_builder.build_reel_with_generated_background(
+                audio_path=audio_path,
+                subtitle_text=content.hook,
+                output_name=f"reel_{ts}.mp4",
+            )
         final_video = video_builder.build_reel(
             media_path=media_path,
             audio_path=audio_path,
