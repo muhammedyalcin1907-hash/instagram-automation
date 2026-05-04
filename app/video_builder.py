@@ -6,6 +6,19 @@ from pathlib import Path
 from app.config import settings
 
 
+def clean_text(text: str) -> str:
+    return (
+        text.replace("'", "")
+        .replace('"', "")
+        .replace(":", "")
+        .replace(",", "")
+        .replace(";", "")
+        .replace("\\", "")
+        .replace("\n", " ")
+        .strip()
+    )
+
+
 class VideoBuilder:
     def build_cinematic_reel(
         self,
@@ -13,13 +26,10 @@ class VideoBuilder:
         subtitle_lines: list[str],
         output_name: str,
     ) -> Path:
-
         settings.generated_dir.mkdir(parents=True, exist_ok=True)
         output_path = settings.generated_dir / output_name
 
-        # Her sahne 3 saniye
         duration_per_scene = 3
-
         inputs = []
         filters = []
 
@@ -27,23 +37,29 @@ class VideoBuilder:
             inputs += ["-loop", "1", "-t", str(duration_per_scene), "-i", str(img)]
 
             filters.append(
-                f"[{i}:v]scale=1080:1920,zoompan=z='min(zoom+0.0015,1.2)':d=75:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[v{i}]"
+                f"[{i}:v]"
+                "scale=1080:1920,"
+                "zoompan=z='min(zoom+0.0015,1.2)':"
+                "d=75:"
+                "x='iw/2-(iw/zoom/2)':"
+                "y='ih/2-(ih/zoom/2)'"
+                f"[v{i}]"
             )
 
         concat_inputs = "".join([f"[v{i}]" for i in range(len(image_paths))])
+        filters.append(f"{concat_inputs}concat=n={len(image_paths)}:v=1:a=0[v]")
 
-        filters.append(
-            f"{concat_inputs}concat=n={len(image_paths)}:v=1:a=0[v]"
-        )
-
-        # subtitle (basit ama şık)
-        full_text = " ".join(subtitle_lines)
+        full_text = clean_text(" ".join(subtitle_lines))[:180]
 
         filters.append(
             f"[v]drawtext=text='{full_text}':"
-            "fontcolor=white:fontsize=48:"
-            "box=1:boxcolor=black@0.4:"
-            "x=(w-text_w)/2:y=h*0.75"
+            "fontcolor=white:"
+            "fontsize=46:"
+            "box=1:"
+            "boxcolor=black@0.55:"
+            "boxborderw=14:"
+            "x=(w-text_w)/2:"
+            "y=h*0.74"
             "[outv]"
         )
 
@@ -63,5 +79,4 @@ class VideoBuilder:
         ]
 
         subprocess.run(cmd, check=True)
-
         return output_path
