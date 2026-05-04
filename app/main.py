@@ -90,9 +90,9 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
         content = content_generator.generate_daily(req.niche)
 
         ts = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        audio_path = settings.generated_dir / f"voice_{ts}.mp3"
 
         try:
+            audio_path = settings.generated_dir / f"voice_{ts}.mp3"
             tts_service.synthesize(
                 text=content.script,
                 output_path=audio_path,
@@ -102,22 +102,20 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
             logger.warning("TTS failed, continuing without audio: %s", e)
             audio_path = None
 
-        image_prompt = f"""
-        cinematic motivational luxury night scene, {req.niche},
-        neon lights, rain, wet street reflections, luxury car,
-        dark aesthetic, high contrast, ultra realistic, 9:16 vertical,
-        dramatic lighting, premium Instagram reels background
-        """
-
-        background_image = image_generator.generate_background(
-            prompt=image_prompt,
-            filename=f"bg_{ts}.png",
+        scene_images = image_generator.generate_dark_cinematic_scenes(
+            niche=req.niche,
+            ts=ts,
         )
 
-        final_video = video_builder.build_reel(
-            media_path=background_image,
-            audio_path=audio_path,
-            subtitle_text=content.script,
+        subtitle_lines = [
+            line.strip()
+            for line in content.script.replace("!", ".").replace("?", ".").split(".")
+            if line.strip()
+        ]
+
+        final_video = video_builder.build_cinematic_reel(
+            image_paths=scene_images,
+            subtitle_lines=subtitle_lines,
             output_name=f"reel_{ts}.mp4",
         )
 
