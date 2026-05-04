@@ -49,10 +49,11 @@ class VideoBuilder:
         concat_inputs = "".join([f"[v{i}]" for i in range(len(image_paths))])
         filters.append(f"{concat_inputs}concat=n={len(image_paths)}:v=1:a=0[v]")
 
-        full_text = clean_text(" ".join(subtitle_lines))[:180]
+        full_text = clean_text(" ".join(subtitle_lines))[:160]
 
         filters.append(
             f"[v]drawtext=text='{full_text}':"
+            "fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
             "fontcolor=white:"
             "fontsize=46:"
             "box=1:"
