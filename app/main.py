@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.content_generator import ContentGenerator
 from app.database import ReelHistory, get_db, save_history, init_db
+from app.image_generator import ImageGenerator
 from app.instagram_client import InstagramClient
 from app.scheduler import shutdown_scheduler
 from app.tts import TTSService
@@ -27,6 +28,7 @@ content_generator = ContentGenerator()
 tts_service = TTSService()
 video_builder = VideoBuilder()
 instagram_client = InstagramClient()
+image_generator = ImageGenerator()
 
 
 class ReelRequest(BaseModel):
@@ -100,27 +102,24 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
             logger.warning("TTS failed, continuing without audio: %s", e)
             audio_path = None
 
-        if req.media_filename:
-            media_path = settings.uploads_dir / req.media_filename
+        image_prompt = f"""
+        cinematic motivational luxury night scene, {req.niche},
+        neon lights, rain, wet street reflections, luxury car,
+        dark aesthetic, high contrast, ultra realistic, 9:16 vertical,
+        dramatic lighting, premium Instagram reels background
+        """
 
-            if not media_path.exists():
-                raise HTTPException(
-                    status_code=404,
-                    detail="Media file not found in uploads directory",
-                )
+        background_image = image_generator.generate_background(
+            prompt=image_prompt,
+            filename=f"bg_{ts}.png",
+        )
 
-            final_video = video_builder.build_reel(
-                media_path=media_path,
-                audio_path=audio_path,
-                subtitle_text=content.script,
-                output_name=f"reel_{ts}.mp4",
-            )
-        else:
-            final_video = video_builder.build_reel_with_generated_background(
-                audio_path=audio_path,
-                subtitle_text=content.script,
-                output_name=f"reel_{ts}.mp4",
-            )
+        final_video = video_builder.build_reel(
+            media_path=background_image,
+            audio_path=audio_path,
+            subtitle_text=content.script,
+            output_name=f"reel_{ts}.mp4",
+        )
 
         publish_result = {"status": "prepared"}
 
