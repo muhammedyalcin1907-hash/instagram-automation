@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.content_generator import ContentGenerator
 from app.database import ReelHistory, get_db, save_history, init_db
-from app.image_generator import ImageGenerator
 from app.instagram_client import InstagramClient
 from app.scheduler import shutdown_scheduler
 from app.tts import TTSService
@@ -28,7 +27,6 @@ content_generator = ContentGenerator()
 tts_service = TTSService()
 video_builder = VideoBuilder()
 instagram_client = InstagramClient()
-image_generator = ImageGenerator()
 
 
 class ReelRequest(BaseModel):
@@ -65,34 +63,15 @@ def list_history(limit: int = 20, db: Session = Depends(get_db)):
     }
 
 
-@app.get("/reels/history/{history_id}")
-def get_history(history_id: int, db: Session = Depends(get_db)):
-    item = db.query(ReelHistory).filter(ReelHistory.id == history_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="History item not found")
-
-    return {
-        "id": item.id,
-        "hook": item.hook,
-        "script": item.script,
-        "title": item.title,
-        "caption": item.caption,
-        "hashtags": item.hashtags,
-        "media_path": item.media_path,
-        "share_status": item.share_status,
-        "created_at": item.created_at.isoformat() if item.created_at else None,
-    }
-
-
 @app.post("/reels/generate")
 def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
     try:
         content = content_generator.generate_daily(req.niche)
 
         ts = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        audio_path = settings.generated_dir / f"voice_{ts}.mp3"
 
         try:
-            audio_path = settings.generated_dir / f"voice_{ts}.mp3"
             tts_service.synthesize(
                 text=content.script,
                 output_path=audio_path,
@@ -102,20 +81,9 @@ def generate_reel(req: ReelRequest, db: Session = Depends(get_db)):
             logger.warning("TTS failed, continuing without audio: %s", e)
             audio_path = None
 
-        scene_images = image_generator.generate_dark_cinematic_scenes(
-            niche=req.niche,
-            ts=ts,
-        )
-
-        subtitle_lines = [
-            line.strip()
-            for line in content.script.replace("!", ".").replace("?", ".").split(".")
-            if line.strip()
-        ]
-
-        final_video = video_builder.build_cinematic_reel(
-            image_paths=scene_images,
-            subtitle_lines=subtitle_lines,
+        final_video = video_builder.build_reel_with_generated_background(
+            audio_path=audio_path,
+            subtitle_text=content.script,
             output_name=f"reel_{ts}.mp4",
         )
 
