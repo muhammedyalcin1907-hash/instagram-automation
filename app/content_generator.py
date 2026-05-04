@@ -15,46 +15,47 @@ class ReelContent:
 
 class ContentGenerator:
     def generate_daily(self, niche: str = "motivasyon") -> ReelContent:
-        niche = niche or "motivasyon"
+        niche = (niche or "motivasyon").strip()
 
         hooks = [
-            "Bugün kendine bir iyilik yap: vazgeçme.",
-            "Hayatını değiştirecek şey motivasyon değil, disiplin.",
-            "Kimse görmüyorken yaptıkların seni büyütür.",
-            "Başlamak için mükemmel günü bekleme.",
+            "Bugün pes etmezsen, yarın kendine teşekkür edeceksin.",
+            "Disiplin, motivasyonun bittiği yerde başlar.",
+            "Kimse görmüyorken yaptıkların kaderini değiştirir.",
+            "Hayatını değiştirmek için büyük bir gün değil, küçük bir karar gerekir.",
+            "Başlamak için hazır olmayı bekleme. Hazır olmak, başlayınca gelir.",
         ]
 
         scripts = [
             [
-                "Bugün küçük bir adım at.",
-                "Telefonu bırak ve hedefini hatırla.",
-                "Kimse senin yerine başlamayacak.",
-                "Zor gelen şey seni güçlendirecek.",
-                "Devam edersen değişim kaçınılmaz.",
+                "Bugün sadece bir adım at.",
+                "Küçük görünse bile devam et.",
+                "Çünkü seni değiştiren şey hız değil, sürekliliktir.",
+                "Kimse görmese bile çalış.",
+                "Bir gün sonuçlar senin adına konuşacak.",
             ],
             [
-                "Her gün aynı yerde kalmak zorunda değilsin.",
-                "Bir karar ver ve arkasında dur.",
-                "Motivasyon geçer ama disiplin kalır.",
-                "Küçük alışkanlıklar büyük sonuçlar doğurur.",
-                "Bugün başladığın şey yarın seni kurtarabilir.",
+                "Kendine verdiğin sözü bugün tut.",
+                "Ertelediğin her şey zihninde ağırlık olur.",
+                "Başlamak korkutabilir ama beklemek daha pahalıdır.",
+                "Bugün yapacağın küçük hamle yarın seni farklı biri yapar.",
+                "Şimdi başla.",
             ],
             [
-                "Kendine verdiğin sözleri tut.",
-                "Başarı bir anda gelmez.",
-                "Sessizce çalış, sonuçlar konuşsun.",
-                "Ertelediğin hayat seni beklemiyor.",
-                "Şimdi başla, çünkü en doğru zaman bu.",
+                "Motivasyon bekleme.",
+                "Disiplin kur.",
+                "Her gün aynı saatte küçük bir işi bitir.",
+                "Bunu yeterince uzun yaparsan özgüvenin geri gelir.",
+                "Çünkü güven, kendine verdiğin sözleri tutunca büyür.",
             ],
         ]
 
         hook = random.choice(hooks)
         lines = random.choice(scripts)
 
-        script = " ".join(lines)
-        title = f"{niche.title()} Reels"
-        caption = f"{hook}\n\n{script}"
-        hashtags = "#motivasyon #basari #gelisim #disiplin #reels #aireelsotoman"
+        script = ". ".join(lines) + "."
+        title = f"{niche.title()} İçin Güçlü Reels"
+        caption = f"{hook}\n\n{script}\n\nKaydet ve bugün uygula."
+        hashtags = "#motivasyon #disiplin #basari #kisiselgelisim #reels #aireelsotoman"
 
         return ReelContent(
             hook=hook,
