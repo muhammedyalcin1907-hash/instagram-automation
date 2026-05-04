@@ -49,20 +49,40 @@ class VideoBuilder:
         concat_inputs = "".join([f"[v{i}]" for i in range(len(image_paths))])
         filters.append(f"{concat_inputs}concat=n={len(image_paths)}:v=1:a=0[v]")
 
-        full_text = clean_text(" ".join(subtitle_lines))[:160]
+        short_texts = []
+        for line in subtitle_lines:
+            cleaned = clean_text(line)
+            if cleaned:
+                short_texts.append(cleaned[:28])
 
-        filters.append(
-            f"[v]drawtext=text='{full_text}':"
-            "fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
-            "fontcolor=white:"
-            "fontsize=46:"
-            "box=1:"
-            "boxcolor=black@0.55:"
-            "boxborderw=14:"
-            "x=(w-text_w)/2:"
-            "y=h*0.74"
-            "[outv]"
-        )
+        if not short_texts:
+            short_texts = ["Bugün başla", "Pes etme", "Devam et"]
+
+        short_texts = short_texts[:3]
+
+        text_filter_parts = []
+
+        times = [(0, 2.5), (3, 5.5), (6, 8.5)]
+
+        for i, text in enumerate(short_texts):
+            start, end = times[i]
+
+            text_filter_parts.append(
+                f"drawtext=text='{text}':"
+                "fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+                "fontcolor=white:"
+                "fontsize=60:"
+                "box=1:"
+                "boxcolor=black@0.60:"
+                "boxborderw=16:"
+                "x=(w-text_w)/2:"
+                "y=h*0.70:"
+                f"enable='between(t,{start},{end})'"
+            )
+
+        text_filter = ",".join(text_filter_parts)
+
+        filters.append(f"[v]{text_filter}[outv]")
 
         cmd = [
             "ffmpeg",
